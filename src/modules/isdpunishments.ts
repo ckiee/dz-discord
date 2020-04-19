@@ -6,39 +6,27 @@ import {
     CommonInhibitors,
 } from "cookiecord";
 import IsdPunishment, { IsdPunModel } from "../isdpunishment";
+import { collectMessage } from "../util";
 
 export default class IsdPunishmentsModule extends Module {
     constructor(client: CookiecordClient) {
         super(client);
     }
-    async collectMessage(msg: Message) {
-        const res = (
-            await msg.channel.awaitMessages(
-                (nm) => nm.author.id !== this.client.user?.id,
-                {
-                    max: 1,
-                    time: 1000 * 60 * 2,
-                    errors: ["time"],
-                }
-            )
-        ).first();
-        if (!res) throw new Error("couldnt collect message");
-        return res;
-    }
+
     @command()
     async punish(msg: Message) {
         msg.channel.send(
             "IGN of bad player? (2 minutes to reply, case insensitive)"
         );
         const violatorName = await (
-            await this.collectMessage(msg)
+            await collectMessage(msg)
         ).content.toLowerCase();
         msg.channel.send(`What did ${violatorName} do?`);
-        const violation = await (await this.collectMessage(msg)).content;
+        const violation = await (await collectMessage(msg)).content;
         msg.channel.send(`Proof/Witnesses?`);
-        const proof = await (await this.collectMessage(msg)).content;
+        const proof = await (await collectMessage(msg)).content;
         msg.channel.send(`What is ${violatorName}'s punishment?`);
-        const punishment = await (await this.collectMessage(msg)).content;
+        const punishment = await (await collectMessage(msg)).content;
 
         const pun = await IsdPunModel.create({
             proof,
@@ -53,7 +41,7 @@ export default class IsdPunishmentsModule extends Module {
     }
 
     @command()
-    async lookup(msg: Message, name: string) {
+    async lookuppun(msg: Message, name: string) {
         const CODEBLOCK = "```";
         const puns = await IsdPunModel.find({
             violatorName: name.toLowerCase(),
@@ -88,7 +76,7 @@ export default class IsdPunishmentsModule extends Module {
     }
 
     @command({ inhibitors: [CommonInhibitors.botAdminsOnly] })
-    async delall(msg: Message) {
+    async delallpuns(msg: Message) {
         const res = await IsdPunModel.deleteMany({}).exec();
         msg.channel.send(`deleted ${res.deletedCount} entries`);
     }

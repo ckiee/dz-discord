@@ -18,7 +18,10 @@ export default class EtcModule extends Module {
         msg.channel.send(`${CODEBLOCK}
 ${P}totalpuns - how many punishments os far
 ${P}punish - make new punishment
-${P}delall - delete ALL the punishments, muhahuah.
+${P}lookuppun - find a punishment
+admin cmds: 
+${P}delallpuns - delete ALL the punishments, muhahuah.
+${P}importpuns - find a punishment
 ${CODEBLOCK}`);
     }
 }
