@@ -82,7 +82,7 @@ export default class IsdPunishmentsModule extends Module {
     }
     @command()
     async totalpuns(msg: Message) {
-        const res = await IsdPunModel.count({}).exec();
+        const res = await IsdPunModel.countDocuments({}).exec();
         msg.channel.send(
             `${res} punishment${res !== 1 ? "s" : ""} have been issued.`
         );
