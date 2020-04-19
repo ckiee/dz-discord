@@ -1,5 +1,5 @@
 
-FROM node:11-alpine
+FROM node:13-alpine
 WORKDIR /usr/src/app
 
 COPY yarn.lock ./
