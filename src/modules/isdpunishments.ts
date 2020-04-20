@@ -75,10 +75,26 @@ export default class IsdPunishmentsModule extends Module {
         }
     }
 
-    @command({ inhibitors: [CommonInhibitors.botAdminsOnly] })
+    @command({
+        inhibitors: [CommonInhibitors.botAdminsOnly],
+        onError: (msg, err) => {
+            msg.channel.send(`:warning: ${err.message}`);
+        },
+    })
     async delallpuns(msg: Message) {
-        const res = await IsdPunModel.deleteMany({}).exec();
-        msg.channel.send(`deleted ${res.deletedCount} entries`);
+        const VERIFY_STR =
+            "YESIMREALLYFUCKINGSUREIWANNADELETEEVERYTHINGIMTOTALLYCRAZY";
+        msg.channel.send(
+            ":warning: This is a terrible idea but if you're sure respond with: " +
+                VERIFY_STR
+        );
+
+        const confirm = await (await collectMessage(msg)).content;
+        if (confirm.trim() !== VERIFY_STR)
+            throw new Error("you need to type the thing i said you moron");
+        msg.channel.send("didnt really delete anything but i wouldve");
+        // const res = await IsdPunModel.deleteMany({}).exec();
+        // msg.channel.send(`deleted ${res.deletedCount} entries`);
     }
     @command()
     async totalpuns(msg: Message) {
@@ -87,7 +103,10 @@ export default class IsdPunishmentsModule extends Module {
             `${res} punishment${res !== 1 ? "s" : ""} have been issued.`
         );
     }
-    @command({ inhibitors: [CommonInhibitors.botAdminsOnly], single: true })
+    @command({
+        inhibitors: [CommonInhibitors.botAdminsOnly],
+        single: true,
+    })
     async importpuns(msg: Message, json: string) {
         const arr = (JSON.parse(json) as IsdPunishment[]).map((p) => {
             p.createdAt = 0;
