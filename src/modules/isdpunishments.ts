@@ -6,14 +6,14 @@ import {
     CommonInhibitors,
 } from "cookiecord";
 import IsdPunishment, { IsdPunModel } from "../isdpunishment";
-import { collectMessage } from "../util";
+import { collectMessage, isInIsdChat } from "../util";
 
 export default class IsdPunishmentsModule extends Module {
     constructor(client: CookiecordClient) {
         super(client);
     }
 
-    @command()
+    @command({ inhibitors: [isInIsdChat] })
     async punish(msg: Message) {
         msg.channel.send(
             "IGN of bad player? (2 minutes to reply, case insensitive)"
@@ -40,7 +40,7 @@ export default class IsdPunishmentsModule extends Module {
         console.log(pun);
     }
 
-    @command()
+    @command({ inhibitors: [isInIsdChat] })
     async lookuppun(msg: Message, name: string) {
         const CODEBLOCK = "```";
         const puns = await IsdPunModel.find({
@@ -96,7 +96,7 @@ export default class IsdPunishmentsModule extends Module {
         // const res = await IsdPunModel.deleteMany({}).exec();
         // msg.channel.send(`deleted ${res.deletedCount} entries`);
     }
-    @command()
+    @command({ inhibitors: [isInIsdChat] })
     async totalpuns(msg: Message) {
         const res = await IsdPunModel.countDocuments({}).exec();
         msg.channel.send(
@@ -119,12 +119,31 @@ export default class IsdPunishmentsModule extends Module {
         onError: (msg, err) => {
             msg.channel.send(`:warning: ${err.message}`);
         },
+        inhibitors: [isInIsdChat],
     })
     async deletepun(msg: Message, id: string) {
         const pun = await IsdPunModel.findById(id).exec();
         if (!pun) throw new Error("punishment not found");
-        if (pun.punisherID !== msg.author.id)
-            throw new Error("you cannot delete punishments that are not yours");
+        if (pun.punisherID !== msg.author.id) {
+            if (this.client.botAdmins.includes(msg.author.id)) {
+                msg.channel.send(
+                    "you are a bot admin, you may respond with BYPASS to delete the report even though its not yours"
+                );
+                const confirm = await (await collectMessage(msg)).content;
+                if (confirm == "BYPASS") {
+                    await IsdPunModel.findByIdAndDelete(id);
+                    msg.channel.send("deleted (bypass)");
+                } else {
+                    throw new Error(
+                        "you didnt delete a punishment that isnt yours"
+                    );
+                }
+            } else {
+                throw new Error(
+                    "you cannot delete punishments that are not yours"
+                );
+            }
+        }
         await IsdPunModel.findByIdAndDelete(id);
         msg.channel.send("deleted");
     }
