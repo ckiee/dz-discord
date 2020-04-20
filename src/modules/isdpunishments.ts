@@ -96,4 +96,13 @@ export default class IsdPunishmentsModule extends Module {
         const res = await IsdPunModel.create(arr);
         msg.reply(`imported ${res.length} punishments`);
     }
+    @command()
+    async deletepun(msg: Message, id: string) {
+        const pun = await IsdPunModel.findById(id).exec();
+        if (!pun) throw new Error("punishment not found");
+        if (pun.punisherID !== msg.author.id)
+            throw new Error("you cannot delete punishments that are not yours");
+        await IsdPunModel.findByIdAndDelete(id);
+        msg.reply("deleted");
+    }
 }
