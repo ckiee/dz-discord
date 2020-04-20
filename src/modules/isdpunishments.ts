@@ -96,7 +96,11 @@ export default class IsdPunishmentsModule extends Module {
         const res = await IsdPunModel.create(arr);
         msg.reply(`imported ${res.length} punishments`);
     }
-    @command()
+    @command({
+        onError: (msg, err) => {
+            msg.reply(`:warning: ${err.message}`);
+        },
+    })
     async deletepun(msg: Message, id: string) {
         const pun = await IsdPunModel.findById(id).exec();
         if (!pun) throw new Error("punishment not found");
