@@ -13,7 +13,7 @@ export default class EtcModule extends Module {
 
     @command()
     ping(msg: Message) {
-        msg.reply("Pong. :ping_pong:");
+        msg.channel.send("Pong. :ping_pong:");
     }
 
     @listener({ event: "ready" })

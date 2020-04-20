@@ -94,11 +94,11 @@ export default class IsdPunishmentsModule extends Module {
             return p;
         });
         const res = await IsdPunModel.create(arr);
-        msg.reply(`imported ${res.length} punishments`);
+        msg.channel.send(`imported ${res.length} punishments`);
     }
     @command({
         onError: (msg, err) => {
-            msg.reply(`:warning: ${err.message}`);
+            msg.channel.send(`:warning: ${err.message}`);
         },
     })
     async deletepun(msg: Message, id: string) {
@@ -107,6 +107,6 @@ export default class IsdPunishmentsModule extends Module {
         if (pun.punisherID !== msg.author.id)
             throw new Error("you cannot delete punishments that are not yours");
         await IsdPunModel.findByIdAndDelete(id);
-        msg.reply("deleted");
+        msg.channel.send("deleted");
     }
 }
