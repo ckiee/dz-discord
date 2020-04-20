@@ -1,19 +1,39 @@
-import { Message, MessageEmbed } from "discord.js";
+import { Message, MessageEmbed, User } from "discord.js";
 import {
     command,
     default as CookiecordClient,
     Module,
     CommonInhibitors,
+    optional,
 } from "cookiecord";
 import IsdPunishment, { IsdPunModel } from "../isdpunishment";
-import { collectMessage, isInIsdChat } from "../util";
+import { collectMessage, inIsdChat } from "../util";
+import { DocumentType } from "@typegoose/typegoose";
 
 export default class IsdPunishmentsModule extends Module {
     constructor(client: CookiecordClient) {
         super(client);
     }
+    async getPunishmentEmbed(p: DocumentType<IsdPunishment>) {
+        const punisher = isNaN(parseInt(p.punisherID))
+            ? p.punisherID
+            : await this.client.users.fetch(p.punisherID);
+        const embed = new MessageEmbed()
+            .setColor("RED")
+            .setDescription(p.violation)
+            .addField("Punishment", p.punishment)
+            .addField("Proof/Witnesses", p.proof)
+            .setFooter(
+                `id is ${p._id} | punished at${!p.createdAt ? " UNKNOWN" : ""}`
+            )
+            .setTimestamp(p.createdAt);
+        if (typeof punisher == "string") embed.setAuthor(p.punisherID);
+        else if (punisher)
+            embed.setAuthor(punisher.tag, punisher.displayAvatarURL());
+        return embed;
+    }
 
-    @command({ inhibitors: [isInIsdChat] })
+    @command({ inhibitors: [inIsdChat] })
     async punish(msg: Message) {
         msg.channel.send(
             "IGN of bad player? (2 minutes to reply, case insensitive)"
@@ -39,10 +59,23 @@ export default class IsdPunishmentsModule extends Module {
         msg.channel.send(`Made new punishment. (id is ${pun._id})`);
         console.log(pun);
     }
-
-    @command({ inhibitors: [isInIsdChat] })
-    async lookuppun(msg: Message, name: string) {
-        const CODEBLOCK = "```";
+    @command({ inhibitors: [inIsdChat] })
+    async lookupPunBy(msg: Message, @optional u: User) {
+        const puns = await IsdPunModel.find({
+            punisherID: u.id || msg.author.id,
+        }).exec();
+        if (puns.length == 0) {
+            await msg.channel.send(
+                `${u.tag || msg.author.tag} hasnt issued any punishments`
+            );
+        } else {
+            puns.forEach(async (p) => {
+                msg.channel.send({ embed: await this.getPunishmentEmbed(p) });
+            });
+        }
+    }
+    @command({ inhibitors: [inIsdChat] })
+    async lookupPun(msg: Message, name: string) {
         const puns = await IsdPunModel.find({
             violatorName: name.toLowerCase(),
         }).exec();
@@ -50,27 +83,7 @@ export default class IsdPunishmentsModule extends Module {
             await msg.channel.send(`nothing found on ${name.toLowerCase()}`);
         } else {
             puns.forEach(async (p) => {
-                const punisher = isNaN(parseInt(p.punisherID))
-                    ? p.punisherID
-                    : await msg.guild?.members.fetch(p.punisherID);
-                const embed = new MessageEmbed()
-                    .setColor("RED")
-                    .setDescription(p.violation)
-                    .addField("Punishment", p.punishment)
-                    .addField("Proof/Witnesses", p.proof)
-                    .setFooter(
-                        `id is ${p._id} | punished at${
-                            !p.createdAt ? " UNKNOWN" : ""
-                        }`
-                    )
-                    .setTimestamp(p.createdAt);
-                if (typeof punisher == "string") embed.setAuthor(p.punisherID);
-                else if (punisher)
-                    embed.setAuthor(
-                        punisher.user.tag,
-                        punisher.user.displayAvatarURL()
-                    );
-                msg.channel.send({ embed });
+                msg.channel.send({ embed: await this.getPunishmentEmbed(p) });
             });
         }
     }
@@ -92,11 +105,10 @@ export default class IsdPunishmentsModule extends Module {
         const confirm = await (await collectMessage(msg)).content;
         if (confirm.trim() !== VERIFY_STR)
             throw new Error("you need to type the thing i said you moron");
-        msg.channel.send("didnt really delete anything but i wouldve");
-        // const res = await IsdPunModel.deleteMany({}).exec();
-        // msg.channel.send(`deleted ${res.deletedCount} entries`);
+        const res = await IsdPunModel.deleteMany({}).exec();
+        msg.channel.send(`deleted ${res.deletedCount} entries`);
     }
-    @command({ inhibitors: [isInIsdChat] })
+    @command({ inhibitors: [inIsdChat] })
     async totalpuns(msg: Message) {
         const res = await IsdPunModel.countDocuments({}).exec();
         msg.channel.send(
@@ -119,7 +131,7 @@ export default class IsdPunishmentsModule extends Module {
         onError: (msg, err) => {
             msg.channel.send(`:warning: ${err.message}`);
         },
-        inhibitors: [isInIsdChat],
+        inhibitors: [inIsdChat],
     })
     async deletepun(msg: Message, id: string) {
         const pun = await IsdPunModel.findById(id).exec();
@@ -133,6 +145,7 @@ export default class IsdPunishmentsModule extends Module {
                 if (confirm == "BYPASS") {
                     await IsdPunModel.findByIdAndDelete(id);
                     msg.channel.send("deleted (bypass)");
+                    return;
                 } else {
                     throw new Error(
                         "you didnt delete a punishment that isnt yours"
