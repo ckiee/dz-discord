@@ -26,7 +26,7 @@ export default class EtcModule extends Module {
 			// It doesn't like the fact that it's just a import
 			//@ts-ignore
 			const val = env[key];
-			str += `${key}=${val}`;
+			str += `${key}=${val}\n`;
 		}
 		str += "```";
 		msg.channel.send(str);

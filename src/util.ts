@@ -16,6 +16,6 @@ export async function collectMessage(msg: Message) {
 	return res;
 }
 export async function inIsdChan(msg: Message) {
-	if (msg.channel.id == isdChannel)
+	if (msg.channel.id !== isdChannel)
 		return `can only run this in <#${isdChannel}>`;
 }
