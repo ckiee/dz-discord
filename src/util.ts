@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { isdChannel } from "./env";
+import { isdChannel, directors } from "./env";
 
 export async function collectMessage(msg: Message) {
 	const res = (
@@ -18,4 +18,7 @@ export async function collectMessage(msg: Message) {
 export async function inIsdChan(msg: Message) {
 	if (msg.channel.id !== isdChannel)
 		return `can only run this in <#${isdChannel}>`;
+}
+export async function isDirector(msg: Message) {
+	if (!directors.includes(msg.author.id)) return `not a director`;
 }

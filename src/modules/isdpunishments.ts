@@ -1,15 +1,14 @@
-import { Message, MessageEmbed, User } from "discord.js";
+import { DocumentType } from "@typegoose/typegoose";
 import {
 	command,
+	CommonInhibitors,
 	default as CookiecordClient,
 	Module,
-	CommonInhibitors,
 	optional,
 } from "cookiecord";
+import { Message, MessageEmbed, User } from "discord.js";
 import IsdPunishment, { IsdPunModel } from "../isdpunishment";
-import { collectMessage, inIsdChan } from "../util";
-import { DocumentType } from "@typegoose/typegoose";
-import { directors } from "../env";
+import { collectMessage, inIsdChan, isDirector } from "../util";
 
 export default class IsdPunishmentsModule extends Module {
 	constructor(client: CookiecordClient) {
@@ -72,7 +71,9 @@ export default class IsdPunishmentsModule extends Module {
 			);
 		} else {
 			puns.forEach(async (p) => {
-				msg.channel.send({ embed: await this.getPunishmentEmbed(p) });
+				msg.channel.send({
+					embed: await this.getPunishmentEmbed(p),
+				});
 			});
 		}
 	}
@@ -85,7 +86,9 @@ export default class IsdPunishmentsModule extends Module {
 			await msg.channel.send(`nothing found on ${name.toLowerCase()}`);
 		} else {
 			puns.forEach(async (p) => {
-				msg.channel.send({ embed: await this.getPunishmentEmbed(p) });
+				msg.channel.send({
+					embed: await this.getPunishmentEmbed(p),
+				});
 			});
 		}
 	}
@@ -141,6 +144,18 @@ export default class IsdPunishmentsModule extends Module {
 		if (pun.punisherID !== msg.author.id) {
 			throw new Error("you cannot delete punishments that are not yours");
 		}
+		await IsdPunModel.findByIdAndDelete(id);
+		msg.channel.send("deleted");
+	}
+	@command({
+		onError: (msg, err) => {
+			msg.channel.send(`:warning: ${err.message}`);
+		},
+		inhibitors: [inIsdChan, isDirector],
+	})
+	async deletepunadmin(msg: Message, id: string) {
+		const pun = await IsdPunModel.findById(id).exec();
+		if (!pun) throw new Error("punishment not found");
 		await IsdPunModel.findByIdAndDelete(id);
 		msg.channel.send("deleted");
 	}
