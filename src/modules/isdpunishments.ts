@@ -67,7 +67,7 @@ export default class IsdPunishmentsModule extends Module {
 		}).exec();
 		if (puns.length == 0) {
 			await msg.channel.send(
-				`${u.tag || msg.author.tag} hasnt issued any punishments`
+				`${u.tag || msg.author.tag} hasnt issued any punishments.`
 			);
 		} else {
 			puns.forEach(async (p) => {
@@ -83,7 +83,9 @@ export default class IsdPunishmentsModule extends Module {
 			violatorName: name.toLowerCase(),
 		}).exec();
 		if (puns.length == 0) {
-			await msg.channel.send(`nothing found on ${name.toLowerCase()}`);
+			await msg.channel.send(
+				`nothing found on \`${name.toLowerCase()}\`.`
+			);
 		} else {
 			puns.forEach(async (p) => {
 				msg.channel.send({
@@ -103,13 +105,14 @@ export default class IsdPunishmentsModule extends Module {
 		const VERIFY_STR =
 			"YESIMREALLYFUCKINGSUREIWANNADELETEEVERYTHINGIMTOTALLYCRAZY";
 		msg.channel.send(
-			":warning: This is a terrible idea but if you're sure respond with: " +
-				VERIFY_STR
+			":warning: This is a terrible idea but if you're sure respond with: `" +
+				VERIFY_STR +
+				"`."
 		);
 
 		const confirm = await (await collectMessage(msg)).content;
 		if (confirm.trim() !== VERIFY_STR)
-			throw new Error("you need to type the thing i said you moron");
+			throw new Error("you need to type the thing i said you moron.");
 		const res = await IsdPunModel.deleteMany({}).exec();
 		msg.channel.send(`deleted ${res.deletedCount} entries`);
 	}
@@ -130,7 +133,7 @@ export default class IsdPunishmentsModule extends Module {
 			return p;
 		});
 		const res = await IsdPunModel.create(arr);
-		msg.channel.send(`imported ${res.length} punishments`);
+		msg.channel.send(`imported ${res.length} punishments.`);
 	}
 	@command({
 		onError: (msg, err) => {
@@ -140,23 +143,26 @@ export default class IsdPunishmentsModule extends Module {
 	})
 	async deletepun(msg: Message, id: string) {
 		const pun = await IsdPunModel.findById(id).exec();
-		if (!pun) throw new Error("punishment not found");
+		if (!pun) throw new Error("punishment not found!");
 		if (pun.punisherID !== msg.author.id) {
-			throw new Error("you cannot delete punishments that are not yours");
+			throw new Error(
+				"you cannot delete punishments that are not yours."
+			);
 		}
 		await IsdPunModel.findByIdAndDelete(id);
-		msg.channel.send("deleted");
+		msg.channel.send("deleted.");
 	}
 	@command({
 		onError: (msg, err) => {
 			msg.channel.send(`:warning: ${err.message}`);
 		},
 		inhibitors: [inIsdChan, isDirector],
+		aliases: ["deletepuna"],
 	})
 	async deletepunadmin(msg: Message, id: string) {
 		const pun = await IsdPunModel.findById(id).exec();
-		if (!pun) throw new Error("punishment not found");
+		if (!pun) throw new Error("punishment not found!");
 		await IsdPunModel.findByIdAndDelete(id);
-		msg.channel.send("deleted");
+		msg.channel.send("deleted. (admin)");
 	}
 }
