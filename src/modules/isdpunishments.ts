@@ -138,9 +138,13 @@ export default class IsdPunishmentsModule extends Module {
 		const pun = await IsdPunModel.findById(id).exec();
 		if (!pun) throw new Error("punishment not found");
 		if (pun.punisherID !== msg.author.id) {
-			if (this.client.botAdmins.includes(msg.author.id)) {
+			if (
+				(process.env.DIRECTORS?.split(",") || []).includes(
+					msg.author.id
+				)
+			) {
 				msg.channel.send(
-					"you are a bot admin, you may respond with BYPASS to delete the report even though its not yours"
+					"you are a director (or chief?), you may respond with BYPASS to delete the report even though its not yours"
 				);
 				const confirm = await (await collectMessage(msg)).content;
 				if (confirm == "BYPASS") {
