@@ -60,7 +60,7 @@ export default class IsdPunishmentsModule extends Module {
 		msg.channel.send(`Made new punishment. (id is ${pun._id})`);
 		console.log(pun);
 	}
-	@command({ inhibitors: [inIsdChan] })
+	@command({ inhibitors: [inIsdChan], aliases: ["lookupby"] })
 	async lookupPunBy(msg: Message, @optional u: User) {
 		const puns = await IsdPunModel.find({
 			punisherID: u.id || msg.author.id,
@@ -77,7 +77,7 @@ export default class IsdPunishmentsModule extends Module {
 			});
 		}
 	}
-	@command({ inhibitors: [inIsdChan] })
+	@command({ inhibitors: [inIsdChan], aliases: ["lookup"] })
 	async lookupPun(msg: Message, name: string) {
 		const puns = await IsdPunModel.find({
 			violatorName: name.toLowerCase(),
