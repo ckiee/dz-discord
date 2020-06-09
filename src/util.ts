@@ -4,7 +4,7 @@ import { isdChannel, directors } from "./env";
 export async function collectMessage(msg: Message) {
 	const res = (
 		await msg.channel.awaitMessages(
-			(nm) => nm.author.id !== msg.client.user?.id,
+			(nm) => nm.author.id !== msg.author.id,
 			{
 				max: 1,
 				time: 1000 * 60 * 2,
