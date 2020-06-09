@@ -64,7 +64,10 @@ export default class IsdPunishmentsModule extends Module {
 	async lookupPunBy(msg: Message, @optional u: User) {
 		const puns = await IsdPunModel.find({
 			punisherID: u.id || msg.author.id,
-		}).exec();
+		})
+			.sort({ createdAt: -1 })
+			.limit(5)
+			.exec();
 		if (puns.length == 0) {
 			await msg.channel.send(
 				`${u.tag || msg.author.tag} hasnt issued any punishments.`
