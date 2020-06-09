@@ -7,8 +7,9 @@ import {
 	optional,
 } from "cookiecord";
 import IsdPunishment, { IsdPunModel } from "../isdpunishment";
-import { collectMessage, inIsdChat } from "../util";
+import { collectMessage, inIsdChan } from "../util";
 import { DocumentType } from "@typegoose/typegoose";
+import { directors } from "../env";
 
 export default class IsdPunishmentsModule extends Module {
 	constructor(client: CookiecordClient) {
@@ -34,7 +35,7 @@ export default class IsdPunishmentsModule extends Module {
 		return embed;
 	}
 
-	@command({ inhibitors: [inIsdChat] })
+	@command({ inhibitors: [inIsdChan] })
 	async punish(msg: Message) {
 		msg.channel.send(
 			"IGN of bad player? (2 minutes to reply, case insensitive)"
@@ -60,7 +61,7 @@ export default class IsdPunishmentsModule extends Module {
 		msg.channel.send(`Made new punishment. (id is ${pun._id})`);
 		console.log(pun);
 	}
-	@command({ inhibitors: [inIsdChat] })
+	@command({ inhibitors: [inIsdChan] })
 	async lookupPunBy(msg: Message, @optional u: User) {
 		const puns = await IsdPunModel.find({
 			punisherID: u.id || msg.author.id,
@@ -75,7 +76,7 @@ export default class IsdPunishmentsModule extends Module {
 			});
 		}
 	}
-	@command({ inhibitors: [inIsdChat] })
+	@command({ inhibitors: [inIsdChan] })
 	async lookupPun(msg: Message, name: string) {
 		const puns = await IsdPunModel.find({
 			violatorName: name.toLowerCase(),
@@ -109,7 +110,7 @@ export default class IsdPunishmentsModule extends Module {
 		const res = await IsdPunModel.deleteMany({}).exec();
 		msg.channel.send(`deleted ${res.deletedCount} entries`);
 	}
-	@command({ inhibitors: [inIsdChat] })
+	@command({ inhibitors: [inIsdChan] })
 	async totalpuns(msg: Message) {
 		const res = await IsdPunModel.countDocuments({}).exec();
 		msg.channel.send(
@@ -132,35 +133,13 @@ export default class IsdPunishmentsModule extends Module {
 		onError: (msg, err) => {
 			msg.channel.send(`:warning: ${err.message}`);
 		},
-		inhibitors: [inIsdChat],
+		inhibitors: [inIsdChan],
 	})
 	async deletepun(msg: Message, id: string) {
 		const pun = await IsdPunModel.findById(id).exec();
 		if (!pun) throw new Error("punishment not found");
 		if (pun.punisherID !== msg.author.id) {
-			if (
-				(process.env.DIRECTORS?.split(",") || []).includes(
-					msg.author.id
-				)
-			) {
-				msg.channel.send(
-					"you are a director (or chief?), you may respond with BYPASS to delete the report even though its not yours"
-				);
-				const confirm = await (await collectMessage(msg)).content;
-				if (confirm == "BYPASS") {
-					await IsdPunModel.findByIdAndDelete(id);
-					msg.channel.send("deleted (bypass)");
-					return;
-				} else {
-					throw new Error(
-						"you didnt delete a punishment that isnt yours"
-					);
-				}
-			} else {
-				throw new Error(
-					"you cannot delete punishments that are not yours"
-				);
-			}
+			throw new Error("you cannot delete punishments that are not yours");
 		}
 		await IsdPunModel.findByIdAndDelete(id);
 		msg.channel.send("deleted");

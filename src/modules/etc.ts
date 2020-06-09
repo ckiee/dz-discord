@@ -4,8 +4,10 @@ import {
 	default as CookiecordClient,
 	Module,
 	listener,
+	CommonInhibitors,
 } from "cookiecord";
 import { inspect } from "util";
+import * as env from "../env";
 
 export default class EtcModule extends Module {
 	constructor(client: CookiecordClient) {
@@ -15,6 +17,19 @@ export default class EtcModule extends Module {
 	@command()
 	ping(msg: Message) {
 		msg.channel.send("Pong. :ping_pong:");
+	}
+
+	@command({ inhibitors: [CommonInhibitors.botAdminsOnly] })
+	readenv(msg: Message) {
+		let str = "Env: ```\n";
+		for (const key in env) {
+			// It doesn't like the fact that it's just a import
+			//@ts-ignore
+			const val = env[key];
+			str += `${key}=${val}`;
+		}
+		str += "```";
+		msg.channel.send(str);
 	}
 
 	@listener({ event: "ready" })

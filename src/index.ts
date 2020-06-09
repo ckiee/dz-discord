@@ -1,11 +1,12 @@
 import CookiecordClient, { HelpModule } from "cookiecord";
 import dotenv from "dotenv-safe";
+import { botAdmins, db, mongoURL } from "./env";
 import { mongoose } from "@typegoose/typegoose";
 dotenv.config();
 
 const client = new CookiecordClient({
-    botAdmins: process.env.BOT_ADMINS?.split(","),
-    prefix: "d!",
+	botAdmins: botAdmins,
+	prefix: "d!",
 });
 
 client.registerModule(HelpModule);
@@ -14,9 +15,9 @@ client.reloadModulesFromFolder("src/modules");
 client.login(process.env.TOKEN);
 client.on("ready", () => console.log(`Logged in as ${client.user?.tag}`));
 mongoose
-    .connect(process.env.MONGO_URL || "mongodb://localhost:27017/", {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        dbName: process.env.DB || "dangerzone-discord",
-    })
-    .then(() => console.log("Connected to Mongo"));
+	.connect(mongoURL, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+		dbName: db,
+	})
+	.then(() => console.log("Connected to Mongo"));

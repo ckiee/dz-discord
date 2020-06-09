@@ -1,4 +1,5 @@
 import { Message } from "discord.js";
+import { isdChannel } from "./env";
 
 export async function collectMessage(msg: Message) {
 	const res = (
@@ -14,7 +15,7 @@ export async function collectMessage(msg: Message) {
 	if (!res) throw new Error("couldnt collect message");
 	return res;
 }
-export async function inIsdChat(msg: Message) {
-	if (msg.channel.id !== (process.env.ISD_CHAN || "719962690319024138"))
-		return "can only run this in #isd-chat";
+export async function inIsdChan(msg: Message) {
+	if (msg.channel.id == isdChannel)
+		return `can only run this in <#${isdChannel}>`;
 }
