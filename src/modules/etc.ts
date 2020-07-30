@@ -18,6 +18,13 @@ export default class EtcModule extends Module {
 	ping(msg: Message) {
 		msg.channel.send("Pong. :ping_pong:");
 	}
+	
+	@command()
+	bypass(msg: Message) {
+		msg.channel.send(
+			"bypass the lame chat filter: https://i.ronthecookie.me/josh-breaker"
+		);
+	}
 
 	@command({ inhibitors: [CommonInhibitors.botAdminsOnly] })
 	readenv(msg: Message) {
