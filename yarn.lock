@@ -151,10 +151,10 @@ combined-stream@^1.0.8:
   dependencies:
     delayed-stream "~1.0.0"
 
-cookiecord@^0.2.12:
-  version "0.2.12"
-  resolved "https://registry.yarnpkg.com/cookiecord/-/cookiecord-0.2.12.tgz#8c193a00cefb71055c6dd97c5bb621562b419837"
-  integrity sha512-uOHW4eQg9vbWId1ncipAVzzEWiN9NXbJ5qjAQVevROq5FYD2HSuc/H5qvhkYI243NDNAPkTXaMpfgnlhuH8amQ==
+cookiecord@^0.2.13:
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/cookiecord/-/cookiecord-0.2.13.tgz#15d49c108a1f989cb411dfafb95e550761a99227"
+  integrity sha512-LdMQz+GzQHyh5s4iOou8QMFAltM3Rya991ipUg1ZLSFm5HnE+nvwwI3FY42nz/x9TLdSy8jMGEIQY+Blpne4ZQ==
   dependencies:
     chokidar "^3.3.1"
     discord.js discordjs/discord.js#stable
