@@ -6,7 +6,7 @@ import {
 	Module,
 	optional,
 } from "cookiecord";
-import { Message, MessageEmbed, User } from "discord.js";
+import { Message, MessageEmbed, GuildMember } from "discord.js";
 import IsdPunishment, { IsdPunModel } from "../isdpunishment";
 import { collectMessage, inIsdChan, isDirector } from "../util";
 
@@ -61,19 +61,19 @@ export default class IsdPunishmentsModule extends Module {
 		console.log(pun);
 	}
 	@command({ inhibitors: [inIsdChan], aliases: ["lookupby"] })
-	async lookupPunBy(msg: Message, @optional u: User) {
+	async lookupPunBy(msg: Message, @optional { user }: GuildMember) {
 		const puns = await IsdPunModel.find({
-			punisherID: u.id || msg.author.id,
+			punisherID: user.id || msg.author.id,
 		})
 			.sort({ createdAt: -1 })
 			.limit(5)
 			.exec();
 		if (puns.length == 0) {
 			await msg.channel.send(
-				`${u.tag || msg.author.tag} hasnt issued any punishments.`
+				`${user.tag || msg.author.tag} hasnt issued any punishments.`
 			);
 		} else {
-			puns.forEach(async (p) => {
+			puns.forEach(async p => {
 				msg.channel.send({
 					embed: await this.getPunishmentEmbed(p),
 				});
@@ -90,7 +90,7 @@ export default class IsdPunishmentsModule extends Module {
 				`nothing found on \`${name.toLowerCase()}\`.`
 			);
 		} else {
-			puns.forEach(async (p) => {
+			puns.forEach(async p => {
 				msg.channel.send({
 					embed: await this.getPunishmentEmbed(p),
 				});
@@ -131,7 +131,7 @@ export default class IsdPunishmentsModule extends Module {
 		single: true,
 	})
 	async importpuns(msg: Message, json: string) {
-		const arr = (JSON.parse(json) as IsdPunishment[]).map((p) => {
+		const arr = (JSON.parse(json) as IsdPunishment[]).map(p => {
 			p.createdAt = 0;
 			return p;
 		});
