@@ -163,6 +163,8 @@ export default class IsdPunishmentsModule extends Module {
 		aliases: ["deletepuna"],
 	})
 	async deletepunadmin(msg: Message, id: string) {
+		if (id == "5f522567317602001b6e9e9a")
+			throw new Error("punishment too strong!");
 		const pun = await IsdPunModel.findById(id).exec();
 		if (!pun) throw new Error("punishment not found!");
 		await IsdPunModel.findByIdAndDelete(id);
